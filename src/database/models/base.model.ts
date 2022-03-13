@@ -1,6 +1,7 @@
 import { Model } from "objection";
 
 class BaseModel extends Model {
+  id?: number;
   created_at!: string;
   updated_at!: string | null;
 

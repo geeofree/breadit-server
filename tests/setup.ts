@@ -1,7 +1,8 @@
 import knex from "../src/database";
 
-beforeAll(() => {
-  knex.migrate.latest();
+beforeAll(async () => {
+  await knex.migrate.latest();
+  await knex.seed.run();
   knex.initialize();
 });
 
