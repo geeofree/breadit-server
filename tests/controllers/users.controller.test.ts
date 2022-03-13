@@ -21,6 +21,18 @@ describe("users.controller", () => {
         })
       );
     });
+
+    it("should return a 400 error response if a given username has already been taken", async () => {
+      const data = { username: "spider-man", password: "spider-man" };
+      const { statusCode, body } = await supertest(server)
+        .post("/api/users/sign-up")
+        .send(data);
+
+      expect(statusCode).toBe(400);
+      expect(body.status).toBe(400);
+      expect(body.message).toBe("Username has already been taken.");
+      expect(body.data).toBeUndefined();
+    });
   });
 
   describe("sign-in", () => {
