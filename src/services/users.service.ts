@@ -10,7 +10,10 @@ export async function signUp(
   newUserData: Pick<User, "username" | "password">
 ): Promise<NewUser> {
   const { username, password } = newUserData;
-  const hashedPassword = await hash(password, process.env.PW_SALT || 10);
+  const hashedPassword = await hash(
+    password,
+    Number(process.env.SALT_ROUNDS) || 10
+  );
   const newUser = await User.query().insertAndFetch({
     username,
     password: hashedPassword,
