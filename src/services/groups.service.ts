@@ -70,3 +70,32 @@ export async function groupSubscribe(
 
   return currentGroup as GroupWithTotalUsers;
 }
+
+export async function groupUnsubscribe(
+  groupName: string,
+  username: string
+): Promise<GroupWithTotalUsers | null> {
+  const user = await User.query().findOne("username", username);
+
+  if (!user) return null;
+
+  const group = await Group.query().findOne("name", groupName);
+
+  if (!group) return null;
+
+  user.$relatedQuery("groups").unrelate().where("name", "groupName");
+
+  const currentGroup = await Group.query()
+    .select(
+      "name",
+      "description",
+      "unique_code",
+      "created_at",
+      "updated_at",
+      Group.relatedQuery("users").count().as("total_users")
+    )
+    .where("name", groupName)
+    .first();
+
+  return currentGroup as GroupWithTotalUsers;
+}

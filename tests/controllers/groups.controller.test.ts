@@ -86,11 +86,12 @@ describe("groups.controller", () => {
     });
   });
 
-  describe("subscribe to group", () => {
+  describe("subscribe/unsubscribe to a group", () => {
     it("should be able to subscribe the current user to a group", async () => {
       const groupName = "atp";
       const { statusCode, body } = await supertest(server)
-        .put(`/api/groups/${groupName}/subscribe`)
+        .put(`/api/groups/${groupName}/subscription`)
+        .query({ subscribe: 1 })
         .set("authorization", `Bearer ${process.env.JWT_TOKEN}`);
 
       expect(statusCode).toBe(200);
@@ -108,9 +109,10 @@ describe("groups.controller", () => {
       );
     });
 
-    it("should return a 404 response when the given group or user name does not exist.", async () => {
+    it("should return a 404 response when the given group or user name does not exist when subscribing.", async () => {
       const { statusCode, body } = await supertest(server)
-        .put("/api/groups/doesnotexist/subscribe")
+        .put("/api/groups/doesnotexist/subscription")
+        .query({ subscribe: 1 })
         .set("authorization", `Bearer ${process.env.JWT_TOKEN}`);
 
       expect(statusCode).toBe(404);
@@ -118,6 +120,54 @@ describe("groups.controller", () => {
       expect(body.message).toBe(
         "Could not subscribe to group. User or group does not exist."
       );
+      expect(body.data).toBeUndefined();
+    });
+
+    it("should be able to unsubscribe the current user to a group", async () => {
+      const groupName = "atp";
+      const { statusCode, body } = await supertest(server)
+        .put(`/api/groups/${groupName}/subscription`)
+        .query({ subscribe: 0 })
+        .set("authorization", `Bearer ${process.env.JWT_TOKEN}`);
+
+      expect(statusCode).toBe(200);
+      expect(body.status).toBe(200);
+      expect(body.message).toBe("Successfully unsubscribed to group.");
+      expect(body.data).toEqual(
+        expect.objectContaining({
+          name: groupName,
+          description: expect.any(String),
+          unique_code: expect.any(String),
+          created_at: expect.any(String),
+          updated_at: expect.any(String),
+          total_users: expect.any(Number),
+        })
+      );
+    });
+
+    it("should return a 404 response when the given group or user name does not exist when unsubscribing.", async () => {
+      const { statusCode, body } = await supertest(server)
+        .put("/api/groups/doesnotexist/subscription")
+        .query({ subscribe: 0 })
+        .set("authorization", `Bearer ${process.env.JWT_TOKEN}`);
+
+      expect(statusCode).toBe(404);
+      expect(body.status).toBe(404);
+      expect(body.message).toBe(
+        "Could not unsubscribe to group. User or group does not exist."
+      );
+      expect(body.data).toBeUndefined();
+    });
+
+    it("should return a 400 response when the subscribe query parameter is malformed", async () => {
+      const { statusCode, body } = await supertest(server)
+        .put("/api/groups/doesnotexist/subscription")
+        .query({ subscribe: "notvalid" })
+        .set("authorization", `Bearer ${process.env.JWT_TOKEN}`);
+
+      expect(statusCode).toBe(400);
+      expect(body.status).toBe(400);
+      expect(body.message).toBe("Missing/invalid subscribe query value.");
       expect(body.data).toBeUndefined();
     });
   });
