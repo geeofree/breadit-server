@@ -20,6 +20,8 @@ export async function up(knex: Knex): Promise<void> {
 
     table.foreign("user_id").references("id").inTable("users");
     table.foreign("group_id").references("id").inTable("groups");
+
+    table.unique(["user_id", "group_id"]);
   });
 }
 
