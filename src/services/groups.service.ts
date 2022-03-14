@@ -54,7 +54,7 @@ export async function groupSubscribe(
 
   if (!group) return null;
 
-  user.$relatedQuery("groups").relate(group);
+  await user.$relatedQuery("groups").relate(group);
 
   const currentGroup = await Group.query()
     .select(
@@ -83,7 +83,7 @@ export async function groupUnsubscribe(
 
   if (!group) return null;
 
-  user.$relatedQuery("groups").unrelate().where("name", "groupName");
+  await user.$relatedQuery("groups").unrelate().where("name", groupName);
 
   const currentGroup = await Group.query()
     .select(

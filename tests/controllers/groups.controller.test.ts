@@ -89,6 +89,9 @@ describe("groups.controller", () => {
   describe("subscribe/unsubscribe to a group", () => {
     it("should be able to subscribe the current user to a group", async () => {
       const groupName = "atp";
+
+      const getGroup = await supertest(server).get(`/api/groups/${groupName}`);
+
       const { statusCode, body } = await supertest(server)
         .put(`/api/groups/${groupName}/subscription`)
         .query({ subscribe: 1 })
@@ -104,7 +107,7 @@ describe("groups.controller", () => {
           unique_code: expect.any(String),
           created_at: expect.any(String),
           updated_at: expect.any(String),
-          total_users: expect.any(Number),
+          total_users: getGroup.body.data.total_users + 1,
         })
       );
     });
@@ -125,6 +128,9 @@ describe("groups.controller", () => {
 
     it("should be able to unsubscribe the current user to a group", async () => {
       const groupName = "atp";
+
+      const getGroup = await supertest(server).get(`/api/groups/${groupName}`);
+
       const { statusCode, body } = await supertest(server)
         .put(`/api/groups/${groupName}/subscription`)
         .query({ subscribe: 0 })
@@ -140,7 +146,7 @@ describe("groups.controller", () => {
           unique_code: expect.any(String),
           created_at: expect.any(String),
           updated_at: expect.any(String),
-          total_users: expect.any(Number),
+          total_users: getGroup.body.data.total_users - 1,
         })
       );
     });
