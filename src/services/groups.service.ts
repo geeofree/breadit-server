@@ -20,3 +20,23 @@ export async function createGroup(
 
   return newGroup as NewGroupOutput;
 }
+
+export async function getGroupByGroupName(
+  groupName: string
+): Promise<Group | null> {
+  const group = await Group.query()
+    .select(
+      "name",
+      "description",
+      "unique_code",
+      "created_at",
+      "updated_at",
+      Group.relatedQuery("users").count().as("total_users")
+    )
+    .where("name", groupName)
+    .first();
+
+  if (!group) return null;
+
+  return group;
+}
