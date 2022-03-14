@@ -107,5 +107,18 @@ describe("groups.controller", () => {
         })
       );
     });
+
+    it("should return a 404 response when the given group or user name does not exist.", async () => {
+      const { statusCode, body } = await supertest(server)
+        .put("/api/groups/doesnotexist/subscribe")
+        .set("authorization", `Bearer ${process.env.JWT_TOKEN}`);
+
+      expect(statusCode).toBe(404);
+      expect(body.status).toBe(404);
+      expect(body.message).toBe(
+        "Could not subscribe to group. User or group does not exist."
+      );
+      expect(body.data).toBeUndefined();
+    });
   });
 });
