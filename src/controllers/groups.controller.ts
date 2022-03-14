@@ -1,4 +1,5 @@
 import { IRouter, Router } from "express";
+import { ValidateJwtMiddleware } from "../middlewares";
 import { GroupsService } from "../services";
 
 const GroupsController: IRouter = Router();
@@ -8,21 +9,17 @@ GroupsController.get("/:groupName", async (req, res) => {
     const group = await GroupsService.getGroupByGroupName(req.params.groupName);
 
     if (!group) {
-      return res
-        .status(404)
-        .json({
-          status: 404,
-          message: "Could not retrieve group. Group does not exists.",
-        });
+      return res.status(404).json({
+        status: 404,
+        message: "Could not retrieve group. Group does not exists.",
+      });
     }
 
-    res
-      .status(200)
-      .json({
-        status: 200,
-        message: "Successfully retrieved group.",
-        data: group,
-      });
+    res.status(200).json({
+      status: 200,
+      message: "Successfully retrieved group.",
+      data: group,
+    });
   } catch (error: any) {
     console.error(`Something went wrong while fetching a group:`, error);
     res.status(500).json({
@@ -56,5 +53,42 @@ GroupsController.post("/", async (req, res) => {
     });
   }
 });
+
+GroupsController.put(
+  "/:groupName/subscribe",
+  ValidateJwtMiddleware,
+  async (req, res) => {
+    try {
+      const group = await GroupsService.groupSubscribe(
+        req.params.groupName,
+        req.currentUser.username
+      );
+
+      if (!group) {
+        return res
+          .status(404)
+          .json({
+            status: 404,
+            message:
+              "Could not subscribe to group. User or group does not exist.",
+          });
+      }
+
+      res
+        .status(200)
+        .json({
+          status: 200,
+          message: "Successfully subscribed to group.",
+          data: group,
+        });
+    } catch (error: any) {
+      console.error(`Something went wrong while subscribing to group:`, error);
+      res.status(500).json({
+        status: 500,
+        message: `Something went wrong while subscribing to group: ${error.message}`,
+      });
+    }
+  }
+);
 
 export default GroupsController;
